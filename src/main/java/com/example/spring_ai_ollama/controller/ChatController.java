@@ -1,10 +1,12 @@
 package com.example.spring_ai_ollama.controller;
 
 import com.example.spring_ai_ollama.service.ChatService;
+import com.example.spring_ai_ollama.service.ImageService;
 import com.example.spring_ai_ollama.service.TranscriptionService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,12 +14,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/chat")
 public class ChatController {
 
-    private ChatService chatService;
-    private TranscriptionService transcriptionService;
+    private final ChatService chatService;
+    private final TranscriptionService transcriptionService;
+    private final ImageService imageService;
 
-    public ChatController(ChatService chatService, TranscriptionService transcriptionService){
+    public ChatController(ChatService chatService, TranscriptionService transcriptionService, ImageService imageService){
         this.chatService=chatService;
         this.transcriptionService=transcriptionService;
+        this.imageService=imageService;
     }
 
     @GetMapping("/get-query")
@@ -46,6 +50,13 @@ public class ChatController {
 
         String text=transcriptionService.convertAudioToText(sampleAudio);
         return ResponseEntity.ok(text);
+    }
+
+    @GetMapping(value = "/generate-image", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getImage(@RequestParam(value="prompt", required = true) String prompt){
+        System.out.println("Inside Image generation API....");
+        byte[] res = imageService.generateImage(prompt);
+        return ResponseEntity.ok(res);
     }
 
 }
